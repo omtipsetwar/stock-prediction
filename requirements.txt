@@ -1,9 +1,12 @@
-tensorflow
 streamlit
 pandas
 numpy
 matplotlib
+tensorflow
 keras
-fpdf
-requests
+scikit-learn
 yfinance
+requests
+fpdf
+textblob
+beautifulsoup4
