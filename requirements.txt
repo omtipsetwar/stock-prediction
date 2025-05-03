@@ -10,3 +10,4 @@ requests
 fpdf
 textblob
 beautifulsoup4
+joblib

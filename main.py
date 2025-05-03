@@ -130,7 +130,7 @@ if st.sidebar.button("Live News"):
             st.subheader(f"📰 Latest News for {stock}")
             sentiments = analyze_sentiment(news_articles)
             for title, url, sentiment in sentiments:
-                st.write(f"**{title}**")
+                st.write(f"{title}")
                 st.write(f"[Read more]({url})")
                 st.write(f"Sentiment: {sentiment}")
                 st.markdown("---")
@@ -163,7 +163,7 @@ if st.sidebar.button("Fetch Stock Data", key="fetch_stock_data_button_1"):
         st.pyplot(plt)
 
         esg_df = generate_esg_data(len(stock_data))
-        st.subheader("♻️ ESG Scores")
+        st.subheader("♻ ESG Scores")
         st.dataframe(esg_df)
 
         splitting_len = int(len(stock_data) * 0.7)
@@ -229,39 +229,18 @@ if st.sidebar.button("Fetch Stock Data", key="fetch_stock_data_button_1"):
             rec_text = "HOLD"
             rec_color = "orange"
 
-        # 🎯 Display recommendation with badges and icons
-st.markdown("### 📌 **Investment Recommendation**")
-st.markdown(f"**Latest Close Price:** {currency_symbol}{latest_close_price:.2f}")
-st.markdown(f"**50-Day Moving Average:** {currency_symbol}{ma_50:.2f}")
-st.markdown(f"**100-Day Moving Average:** {currency_symbol}{ma_100:.2f}")
-st.markdown(f"**200-Day Moving Average:** {currency_symbol}{ma_200:.2f}")
-st.markdown(f"**Average ESG Score:** {avg_esg_score:.2f}")
-
-# Icons and badge styles
-icons = {
-    "BUY": "🟢💹",
-    "SELL": "🔴📉",
-    "HOLD": "🟠🕒"
-}
-
-esg_icons = {
-    "High ESG": "🌿✅",
-    "Moderate ESG": "♻️⚠️"
-}
-
-rec_badge = f"""
-<div style="display: inline-block; padding: 10px 20px; background-color:{rec_color}; 
-            color: white; border-radius: 25px; font-weight: bold; font-size: 18px; margin-right: 10px;">
-    {icons[rec_text]} {rec_text}
-</div>
-"""
-
-esg_badge = f"""
-<div style="display: inline-block; padding: 10px 20px; background-color:{esg_color}; 
-            color: white; border-radius: 25px; font-weight: bold; font-size: 18px;">
-    {esg_icons[esg_label]} {esg_label}
-</div>
-"""
-
-st.markdown("#### 🏅 **Final Verdict:**", unsafe_allow_html=True)
-st.markdown(f"{rec_badge} {esg_badge}", unsafe_allow_html=True)
+        # Display recommendation
+        st.markdown("### 📌 *Investment Recommendation*")
+        st.markdown(f"*Latest Close Price:* {currency_symbol}{latest_close_price:.2f}")
+        st.markdown(f"*50-Day Moving Average:* {currency_symbol}{ma_50:.2f}")
+        st.markdown(f"*100-Day Moving Average:* {currency_symbol}{ma_100:.2f}")
+        st.markdown(f"*200-Day Moving Average:* {currency_symbol}{ma_200:.2f}")
+        st.markdown(f"*Average ESG Score:* {avg_esg_score:.2f}")
+        styled_recommendation = f"""
+        <span style="font-size:18px;">
+            <strong>Recommendation:</strong>
+            <strong style="color:{rec_color};">{rec_text}</strong>
+            (<span style="color:{esg_color};">{esg_label}</span>)
+        </span>
+        """
+        st.markdown(styled_recommendation, unsafe_allow_html=True)
