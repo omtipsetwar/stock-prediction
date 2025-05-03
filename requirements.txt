@@ -2,12 +2,11 @@ streamlit
 pandas
 numpy
 matplotlib
+scikit-learn
 tensorflow
 keras
-scikit-learn
 yfinance
-requests
-fpdf
-textblob
-beautifulsoup4
 joblib
+textblob
+nltk
+fpdf
