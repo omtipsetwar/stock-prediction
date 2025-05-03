@@ -8,7 +8,9 @@ from datetime import datetime
 from sklearn.preprocessing import MinMaxScaler
 import requests
 from textblob import TextBlob
+import joblib
 
+# Adding custom styling
 st.markdown("""
     <style>
     .stButton>button {
@@ -32,6 +34,7 @@ st.title("Stock Market Analysis")
 st.sidebar.header("🔧 Stock Name")
 stock = st.sidebar.text_input("Enter Stock Ticker (e.g., AAPL, TSLA, RELIANCE.NS)", "")
 
+# Check if stock symbol is entered
 if not stock:
     st.sidebar.error("Please enter a valid stock ticker symbol.")
     st.stop()
@@ -39,10 +42,12 @@ if not stock:
 end = datetime.now()
 start = datetime(end.year - 20, end.month, end.day)
 
+# Load model and scaler with error handling
 try:
     model = load_model("Latest_stock_price_model.keras")
+    scaler = joblib.load("price_scaler.pkl")
 except Exception as e:
-    st.error(f"Error loading model: {e}")
+    st.error(f"Error loading model or scaler: {e}")
     st.stop()
 
 def fetch_stock_data(stock):
@@ -76,20 +81,14 @@ def analyze_sentiment(news_articles):
         text = (article.get("title") or "") + " " + (article.get("description") or "")
         blob = TextBlob(text)
         score = blob.sentiment.polarity
-        if score > 0:
-            sentiment = "Positive"
-        elif score < 0:
-            sentiment = "Negative"
-        else:
-            sentiment = "Neutral"
+        sentiment = "Positive" if score > 0 else "Negative" if score < 0 else "Neutral"
         sentiments.append((article["title"], article["url"], sentiment))
     return sentiments
 
 def predict_stock_price(stock_data):
-    scaler = MinMaxScaler(feature_range=(0, 1))
     closing_price = stock_data['Close'].values.reshape(-1, 1)
-    closing_price_scaled = scaler.fit_transform(closing_price)
-    x_input = closing_price_scaled[-60:].reshape(1, -1, 1)
+    closing_price_scaled = scaler.transform(closing_price)
+    x_input = closing_price_scaled[-60:].reshape(1, -1, 1)  # Reshape for LSTM input
     prediction = model.predict(x_input)
     return scaler.inverse_transform(prediction)[0][0]
 
@@ -115,9 +114,7 @@ def plot_graph(figsize, values, full_data, extra_data=0, extra_dataset=None):
     return fig
 
 def get_currency_symbol(stock):
-    if stock.lower().endswith((".ns", ".bs")):
-        return "₹"
-    return "$"
+    return "₹" if stock.lower().endswith((".ns", ".bs")) else "$"
 
 if st.sidebar.button("Live News"):
     stock_data = fetch_stock_data(stock)
@@ -148,7 +145,6 @@ if st.sidebar.button("Live News"):
 
 if st.sidebar.button("Fetch Stock Data", key="fetch_stock_data_button_1"):
     stock_data = fetch_stock_data(stock)
-
     if stock_data is not None:
         st.subheader("📊 Stock Data Overview")
         st.dataframe(stock_data)
@@ -214,11 +210,9 @@ if st.sidebar.button("Fetch Stock Data", key="fetch_stock_data_button_1"):
         avg_esg_score = esg_df['Average Score'].iloc[-1]
         currency_symbol = get_currency_symbol(stock)
 
-        # Assign ESG level and color
         esg_label = "High ESG" if avg_esg_score >= 75 else "Moderate ESG"
         esg_color = "blue" if avg_esg_score >= 75 else "darkorange"
 
-        # Recommendation and color logic
         if latest_close_price > ma_50 and latest_close_price > ma_100 and latest_close_price > ma_200:
             rec_text = "BUY"
             rec_color = "green"
@@ -229,7 +223,6 @@ if st.sidebar.button("Fetch Stock Data", key="fetch_stock_data_button_1"):
             rec_text = "HOLD"
             rec_color = "orange"
 
-        # Display recommendation
         st.markdown("### 📌 *Investment Recommendation*")
         st.markdown(f"*Latest Close Price:* {currency_symbol}{latest_close_price:.2f}")
         st.markdown(f"*50-Day Moving Average:* {currency_symbol}{ma_50:.2f}")
